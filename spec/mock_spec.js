@@ -72,11 +72,13 @@ Screw.Unit(function() {
 				mockObj.should_receive('foo').with_arguments('bar',baz).and_return('foobar'); 
 				expect(mockObj.foo('bar',baz)).to(equal, 'foobar');
 			});
+			
 			it("should return undefined if the arguments aren't matched", function() {
 				mockObj = mock()
 				mockObj.should_receive('foo').with_arguments('bar').and_return('foobar'); 
 				expect(mockObj.foo('chicken')).to(equal, undefined);
 			});
+			
 			it("should allow mocking multiple method signatures with different returns", function() {
 				mockObj = mock()
 				mockObj.should_receive('foo').with_arguments('bar').and_return('foobar'); 
@@ -84,17 +86,50 @@ Screw.Unit(function() {
 				expect(mockObj.foo('mouse')).to(equal, 'cheese');
 				expect(mockObj.foo('bar')).to(equal, 'foobar');
 			});
+			
 			it("should allow mocking a method signature with arguments and setting expectations", function() {
 				mockObj = mock()
 				mockObj.should_receive('foo').with_arguments('bar').exactly('once');
 				mockObj.foo('bar')
 			});
+			
 			it("should only mock the exact method signature when with_arguments is used with no arguments", function() {
         mockObj = mock();
         mockObj.should_receive('foo').with_arguments().exactly('once');
         mockObj.foo('should ignore this call');
         mockObj.foo();
 			});
+
+      describe("with argument matchers", function(){
+        describe("anything", function(){
+    			it("should match an object", function() {
+    				mockObj = mock()
+    				mockObj.should_receive('foo').with_arguments('bar', anything).and_return('foobar'); 
+    				expect(mockObj.foo('bar', {})).to(equal, 'foobar');
+    			});
+			
+    			it("should not match when argument is missing", function() {
+    			  // this is actually taken care of by the argument count matching, but the spec is here just in case that changes
+    				mockObj = mock()
+    				mockObj.should_receive('foo').with_arguments('bar', anything).and_return('foobar'); 
+    				expect(mockObj.foo('bar')).to(equal, undefined);
+    			});
+        });
+
+        describe("a(type)", function(){
+    			it("should match when type is same", function() {
+    				mockObj = mock()
+    				mockObj.should_receive('foo').with_arguments('bar', a("number")).and_return('foobar'); 
+    				expect(mockObj.foo('bar', 123)).to(equal, 'foobar');
+    			});
+			
+    			it("should not match a differing type", function() {
+    				mockObj = mock()
+    				mockObj.should_receive('foo').with_arguments('bar', a("number")).and_return('foobar'); 
+    				expect(mockObj.foo('bar', 'qux')).to(equal, undefined);
+    			});
+        });
+      });
 		});
 		
 		describe("added ontop of an existing object", function() {
